@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  adminer:
+    image: adminer
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+    networks:
+      - bridge-network
+
+  db:
+    image: postgres:14.0
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - bridge-network
+
+  redis:
+    image: redis:6.2.5
+    command: redis-server
+    networks:
+      - bridge-network
+
+  web:
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: ./.dockerdev/Dockerfile
+    working_dir: /home/app/html
+    environment:
+      REDIS_HOST: redis
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      BUNDLE_PATH: /bundle/vendor
+      RAILS_ENV: development
+      PORT: 3000
+    command: /bin/sh ".dockerdev/commander/commander.dev.sh"
+    volumes:
+      - .:/home/app/html:rw
+      - bundle_cache:/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - bridge-network
+
+  sidekiq:
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: ./.dockerdev/Dockerfile
+    working_dir: /home/app/html
+    environment:
+      REDIS_HOST: redis
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      BUNDLE_PATH: /bundle/vendor
+      RAILS_ENV: development
+      PORT: 3000
+    command: /bin/sh -c "bundle exec sidekiq -C config/sidekiq.yml"
+    volumes:
+      - .:/home/app/html
+      - bundle_cache:/bundle
+    depends_on:
+      - db
+      - redis
+    networks:
+      - bridge-network
+
+networks:
+  bridge-network:
+    driver: bridge
+
+volumes:
+  db:
+  bundle_cache:
