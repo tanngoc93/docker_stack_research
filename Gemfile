@@ -70,3 +70,5 @@ group :test do
 end
 
 gem "sidekiq"
+gem "searchkick"
+gem "elasticsearch", "~> 7.17.1"
