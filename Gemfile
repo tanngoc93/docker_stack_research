@@ -55,6 +55,9 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 
+  #
+  gem "rails-erd"
+
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem "rack-mini-profiler"
 
@@ -69,6 +72,7 @@ group :test do
   gem "webdrivers"
 end
 
+# 
 gem "sidekiq"
 gem "searchkick"
 gem "elasticsearch", "~> 7.17.1"
